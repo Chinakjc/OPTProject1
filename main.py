@@ -162,9 +162,16 @@ def h_lagrange(v):
 def get_f_valeur(v):
     return f(v[3:])
 
-x0 = np.expand_dims([1,0,0,1,0],axis=0).T
+x0 = np.expand_dims([-1.71,1.59,1.82,-0.763,-0.763],axis=0).T
+x1 = np.expand_dims([-1.9,1.82,2.02,-0.9,-0.9],axis=0).T
+x2 = np.expand_dims([1,0,3,0,0],axis=0).T
 l0 = np.expand_dims([0,1,0],axis=0).T
 v0 = np.block([[l0], [x0]])
-print(get_f_valeur(newton(v0, d_lagrange, h_lagrange, 1000)))
+v1 = np.block([[l0], [x1]])
+v2 = np.block([[l0], [x2]])
+k_max = 10000
+print(get_f_valeur(newton(v0, d_lagrange, h_lagrange, k_max)))
+print(get_f_valeur(newton(v1, d_lagrange, h_lagrange, k_max)))
+print(get_f_valeur(newton(v2, d_lagrange, h_lagrange, k_max)))
 '''print(jacob_g(x0))
 print(norme(jacob_g(x0)))'''
