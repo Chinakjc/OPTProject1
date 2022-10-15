@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 import sys
 
 eps = sys.float_info.epsilon
@@ -16,6 +17,23 @@ def newton(v0, df, hf, k_max):
         y = solve(hf(v), -df(v))
         v = y + v
         k = k + 1
+    return v
+
+def newton_analyse_convergence(v0, df, hf, k_max):
+    v = v0
+    k = 0
+    err = list()
+    err0 = norme(df(v))
+    while (eps < norme(df(v))) and (k < k_max):
+        # Xk+1 = Xk - inv(H)*df
+        # H(Xk+1 -Xk) = -df = H(y)
+        # Xk+1 = y + Xk
+        err.append(norme(df(v))/err0)
+        y = solve(hf(v), -df(v))
+        v = y + v
+        k = k + 1
+    plt.plot(np.log([x+1 for x in range(k)]),np.log(err))
+    plt.show()
     return v
 
 
@@ -159,7 +177,7 @@ def h_lagrange(v):
     return hessian_lagrange_f_g(l, x)
 
 
-def sqp(l0, x0, k_max):
+def sqp(l0, x0, k_max,mode:bool = False):
     print("Appliquier SQP pour condition initiale suivante : ")
     print("x0 : ")
     print(x0)
@@ -167,7 +185,10 @@ def sqp(l0, x0, k_max):
     print(l0)
     print("En cours de calculation !")
     v0 = np.block([[l0], [x0]])
-    sol = newton(v0, d_lagrange, h_lagrange, k_max)
+    if(mode):
+        sol = newton_analyse_convergence(v0, d_lagrange, h_lagrange, k_max)
+    else:
+        sol = newton(v0, d_lagrange, h_lagrange, k_max)
     l_sol = sol[:3]
     x_sol = sol[3:]
     print("Calculation est terminée !")
@@ -176,16 +197,15 @@ def sqp(l0, x0, k_max):
     print(str(x_sol))
     print("lambda_sol est : " )
     print(l_sol)
-    print("Pour vérification, g(x) = " )
+    print("Pour vérification de la condition contrainte, g(x_sol) = " )
     print(g(x_sol))
-
 
 x0 = np.expand_dims([-1.71, 1.59, 1.82, -0.763, -0.763], axis=0).T
 x1 = np.expand_dims([-1.9, 1.82, 2.02, -0.9, -0.9], axis=0).T
 x2 = np.expand_dims([1, 0, 3, 0, 0], axis=0).T
-l0 = np.expand_dims([0, 1, 0], axis=0).T
+l0 = np.expand_dims([1, 1, 0], axis=0).T
 k_max = 1500
 
-sqp(l0, x0, k_max)
-sqp(l0,x1,k_max)
-sqp(l0,x2,k_max)
+sqp(l0, x0, k_max,True)
+sqp(l0,x1,k_max,True)
+sqp(l0,x2,k_max,True)
