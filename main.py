@@ -4,7 +4,6 @@ import sys
 eps = sys.float_info.epsilon
 norme = np.linalg.norm
 solve = np.linalg.solve
-print(eps)
 
 
 def newton(v0, df, hf, k_max):
@@ -44,13 +43,13 @@ def grad_f(x):
     res = list()
     for i in range(5):
         res.append(s_prod(x, i))
-    res = np.expand_dims(res,axis=0).T
+    res = np.expand_dims(res, axis=0).T
     x1 = x[0]
     x2 = x[1]
     r1 = - 3 * x1 ** 5 - 3 * (x2 ** 3 + 1) ** 2
     r2 = - 3 * x2 ** 5 - 3 * (x1 ** 3 + 1) ** 2
-    b1 = np.block([[r1,np.zeros(4)]]).T
-    b2 = np.block([[np.zeros(1),r2,np.zeros(3)]]).T
+    b1 = np.block([[r1, np.zeros(4)]]).T
+    b2 = np.block([[np.zeros(1), r2, np.zeros(3)]]).T
     return res + b1 + b2
 
 
@@ -102,7 +101,7 @@ def jacob_g(x):
     line1 = np.block([2 * x1, 2 * x2, 2 * x3, 2 * x4, 2 * x5])
     line2 = np.block([0, x3, x2, -5 * x5, -5 * x4])
     line3 = np.block([3 * x1 ** 2, 3 * x2 ** 2, 0, 0, 0])
-    return np.block([[line1],[line2],[line3]])
+    return np.block([[line1], [line2], [line3]])
 
 
 def hessian_g_product_lambda(l, x):
@@ -124,7 +123,7 @@ def lagrange_f_g(l, x):
 
 
 def grad_lagrange_f_g(l, x):
-    return np.block([[g(x)],[grad_f(x) + np.dot(jacob_g(x).T, l)]])
+    return np.block([[g(x)], [grad_f(x) + np.dot(jacob_g(x).T, l)]])
 
 
 def hessian_lagrange_f_g(l, x):
@@ -159,19 +158,34 @@ def h_lagrange(v):
     x = v[3:]
     return hessian_lagrange_f_g(l, x)
 
-def get_f_valeur(v):
-    return f(v[3:])
 
-x0 = np.expand_dims([-1.71,1.59,1.82,-0.763,-0.763],axis=0).T
-x1 = np.expand_dims([-1.9,1.82,2.02,-0.9,-0.9],axis=0).T
-x2 = np.expand_dims([1,0,3,0,0],axis=0).T
-l0 = np.expand_dims([0,1,0],axis=0).T
-v0 = np.block([[l0], [x0]])
-v1 = np.block([[l0], [x1]])
-v2 = np.block([[l0], [x2]])
-k_max = 10000
-print(get_f_valeur(newton(v0, d_lagrange, h_lagrange, k_max)))
-print(get_f_valeur(newton(v1, d_lagrange, h_lagrange, k_max)))
-print(get_f_valeur(newton(v2, d_lagrange, h_lagrange, k_max)))
-'''print(jacob_g(x0))
-print(norme(jacob_g(x0)))'''
+def sqp(l0, x0, k_max):
+    print("Appliquier SQP pour condition initiale suivante : ")
+    print("x0 : ")
+    print(x0)
+    print("l0 : ")
+    print(l0)
+    print("En cours de calculation !")
+    v0 = np.block([[l0], [x0]])
+    sol = newton(v0, d_lagrange, h_lagrange, k_max)
+    l_sol = sol[:3]
+    x_sol = sol[3:]
+    print("Calculation est terminée !")
+    print("min de f est : " + str(f(x_sol)))
+    print("x_sol est : ")
+    print(str(x_sol))
+    print("lambda_sol est : " )
+    print(l_sol)
+    print("Pour vérification, g(x) = " )
+    print(g(x_sol))
+
+
+x0 = np.expand_dims([-1.71, 1.59, 1.82, -0.763, -0.763], axis=0).T
+x1 = np.expand_dims([-1.9, 1.82, 2.02, -0.9, -0.9], axis=0).T
+x2 = np.expand_dims([1, 0, 3, 0, 0], axis=0).T
+l0 = np.expand_dims([0, 1, 0], axis=0).T
+k_max = 1500
+
+sqp(l0, x0, k_max)
+sqp(l0,x1,k_max)
+sqp(l0,x2,k_max)
