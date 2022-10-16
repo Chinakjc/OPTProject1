@@ -270,7 +270,7 @@ x0 = np.expand_dims([-1.71, 1.59, 1.82, -0.763, -0.763], axis=0).T
 x1 = np.expand_dims([-1.9, 1.82, 2.02, -0.9, -0.9], axis=0).T
 x2 = np.expand_dims([1, 0, 3, 0, 0], axis=0).T
 l0 = np.expand_dims([0, 0, 0], axis=0).T
-k_max = 1000
+k_max = 15000
 
 sqp(l0, x0, k_max, True)
 sqp(l0, x1, k_max, True)
