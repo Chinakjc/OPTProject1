@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import time
 import sys
 
 eps = sys.float_info.epsilon
@@ -25,6 +26,7 @@ def newton_method_analyse_convergence(v0, df, hf, k_max):
     k = 0
     err = list()
     err0 = norme(df(v))
+    t0 = time.time()
     while (eps < norme(df(v))) and (k < k_max):
         # Xk+1 = Xk - inv(H)*df
         # H(Xk+1 -Xk) = -df = H(y)
@@ -33,7 +35,8 @@ def newton_method_analyse_convergence(v0, df, hf, k_max):
         y = solve(hf(v), -df(v))
         v = y + v
         k = k + 1
-    print("nombre d'itération : " + str(k))
+    tt = time.time()
+    print("nombre d'itération : " + str(k)+", avec temps de calculation : "+ str(tt-t0)+" seconds.")
     plt.plot(np.log([x + 1 for x in range(k)]), np.log(err))
     plt.show()
     return v
@@ -293,6 +296,7 @@ def sqp_method_analyse_convergence(v0, df, dl, hl, dg, g, k_max):
     k = 0
     err = list()
     err0 = norme(dl(v))
+    t0 = time.time()
     while (eps < norme(dl(v))) and (k < k_max):
         l = v[:3]
         x = v[3:]
@@ -310,7 +314,8 @@ def sqp_method_analyse_convergence(v0, df, dl, hl, dg, g, k_max):
         y = np.block([[b], [a]])
         v = y + v
         k = k + 1
-    print("nombre d'itération : "+str(k))
+    tt = time.time()
+    print("nombre d'itération : " + str(k) + ", avec temps de calculation : " + str(tt - t0) + " seconds.")
     plt.plot(np.log([x + 1 for x in range(k)]), np.log(err))
     plt.show()
     return v
