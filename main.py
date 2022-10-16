@@ -7,7 +7,7 @@ norme = np.linalg.norm
 solve = np.linalg.solve
 
 
-def newton(v0, df, hf, k_max):
+def newton_method(v0, df, hf, k_max):
     v = v0
     k = 0
     while (eps < norme(df(v))) and (k < k_max):
@@ -20,7 +20,7 @@ def newton(v0, df, hf, k_max):
     return v
 
 
-def newton_analyse_convergence(v0, df, hf, k_max):
+def newton_method_analyse_convergence(v0, df, hf, k_max):
     v = v0
     k = 0
     err = list()
@@ -242,8 +242,8 @@ def h_lagrange(v):
     return hessian_lagrange_f_g(l, x)
 
 
-def sqp(l0, x0, k_max, mode: bool = False):
-    print("Appliquier SQP pour condition initiale suivante : ")
+def newton(l0, x0, k_max, mode: bool = False):
+    print("Appliquier Newton pour condition initiale suivante : ")
     print("x0 : ")
     print(x0)
     print("l0 : ")
@@ -251,9 +251,9 @@ def sqp(l0, x0, k_max, mode: bool = False):
     print("En cours de calculation !")
     v0 = np.block([[l0], [x0]])
     if (mode):
-        sol = newton_analyse_convergence(v0, d_lagrange, h_lagrange, k_max)
+        sol = newton_method_analyse_convergence(v0, d_lagrange, h_lagrange, k_max)
     else:
-        sol = newton(v0, d_lagrange, h_lagrange, k_max)
+        sol = newton_method(v0, d_lagrange, h_lagrange, k_max)
     l_sol = sol[:3]
     x_sol = sol[3:]
     print("Calculation est terminée !")
@@ -266,19 +266,92 @@ def sqp(l0, x0, k_max, mode: bool = False):
     print(g(x_sol))
 
 
+def sqp_method(v0, df, dl, hl, dg, g, k_max):
+    v = v0
+    k = 0
+    while (eps < norme(dl(v))) and (k < k_max):
+        l = v[:3]
+        x = v[3:]
+        hlk = hl(v)[-5:, -5:]
+        dfk = df(x)
+        jk = dg(x)
+        gk = g(x)
+        m = np.block([[hlk, jk.T], [jk, np.zeros([3, 3])]])
+        b = np.block([[-dfk], [-gk]])
+        ae = solve(m, b)
+        a = ae[:5]
+        e = ae[5:]
+        b = e - l
+        y = np.block([[b], [a]])
+        v = y + v
+        k = k + 1
+    return v
+
+def sqp_method_analyse_convergence(v0, df, dl, hl, dg, g, k_max):
+    v = v0
+    k = 0
+    err = list()
+    err0 = norme(dl(v))
+    while (eps < norme(dl(v))) and (k < k_max):
+        l = v[:3]
+        x = v[3:]
+        err.append(norme(dl(v)) / err0)
+        hlk = hl(v)[-5:, -5:]
+        dfk = df(x)
+        jk = dg(x)
+        gk = g(x)
+        m = np.block([[hlk, jk.T], [jk, np.zeros([3, 3])]])
+        b = np.block([[-dfk], [-gk]])
+        ae = solve(m, b)
+        a = ae[:5]
+        e = ae[5:]
+        b = e - l
+        y = np.block([[b], [a]])
+        v = y + v
+        k = k + 1
+    plt.plot(np.log([x + 1 for x in range(k)]), np.log(err))
+    plt.show()
+    return v
+
+def sqp(l0, x0, k_max, mode: bool = False):
+    print("Appliquier SQP pour condition initiale suivante : ")
+    print("x0 : ")
+    print(x0)
+    print("l0 : ")
+    print(l0)
+    print("En cours de calculation !")
+    v0 = np.block([[l0], [x0]])
+    if (mode):
+        sol = sqp_method_analyse_convergence(v0= v0, df = grad_f, dl = d_lagrange, hl = h_lagrange, dg = jacob_g, g = g, k_max = k_max)
+    else:
+        sol = sqp_method(v0= v0, df = grad_f, dl = d_lagrange, hl = h_lagrange, dg = jacob_g, g = g, k_max = k_max)
+    l_sol = sol[:3]
+    x_sol = sol[3:]
+    print("Calculation est terminée !")
+    print("min de f est : " + str(f(x_sol)))
+    print("x_sol est : ")
+    print(str(x_sol))
+    print("lambda_sol est : ")
+    print(l_sol)
+    print("Pour vérification de la condition contrainte, g(x_sol) = ")
+    print(g(x_sol))
+
 x0 = np.expand_dims([-1.71, 1.59, 1.82, -0.763, -0.763], axis=0).T
 x1 = np.expand_dims([-1.9, 1.82, 2.02, -0.9, -0.9], axis=0).T
 x2 = np.expand_dims([1, 0, 3, 0, 0], axis=0).T
 l0 = np.expand_dims([0, 0, 0], axis=0).T
 k_max = 15000
 
+newton(l0, x0, k_max, True)
 sqp(l0, x0, k_max, True)
+newton(l0, x1, k_max, True)
 sqp(l0, x1, k_max, True)
-sqp(l0, x2, k_max, True)
+newton(l0, x2, k_max, True)
+sqp(l0, x1, k_max, True)
 
 x10 = np.expand_dims([-1.7040916100093402,1.5802605567239958,2.4244592010611106,-1.0164078958300446,-1.0164078958348974], axis=0).T
+newton(l0, x10, k_max, True)
 sqp(l0, x10, k_max, True)
-
 
 # print(grad_f(x0))
 # print(hessian_f(x0))
