@@ -33,6 +33,7 @@ def newton_method_analyse_convergence(v0, df, hf, k_max):
         y = solve(hf(v), -df(v))
         v = y + v
         k = k + 1
+    print("nombre d'itération : " + str(k))
     plt.plot(np.log([x + 1 for x in range(k)]), np.log(err))
     plt.show()
     return v
@@ -309,6 +310,7 @@ def sqp_method_analyse_convergence(v0, df, dl, hl, dg, g, k_max):
         y = np.block([[b], [a]])
         v = y + v
         k = k + 1
+    print("nombre d'itération : "+str(k))
     plt.plot(np.log([x + 1 for x in range(k)]), np.log(err))
     plt.show()
     return v
